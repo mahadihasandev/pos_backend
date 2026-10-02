@@ -1,11 +1,11 @@
-# Engineering System Rules & AI Agent Instructions
+# Backend Engineering System Rules & AI Agent Instructions
 
 > **Universal Core Mandate**: **ALWAYS WRITE CLEAN CODE.**
 > Every line of code written in this repository must be purposeful, minimal, elegant, strictly typed, and free of clutter. Dead code, commented-out blocks, unused files, and redundant abstractions are strictly forbidden.
 
 ---
 
-## 1. Non-Negotiable Architectural Tenets
+## 1. Non-Negotiable Backend Tenets
 
 1. **Always Write Clean Code (Zero Bloat Policy)**:
    - Never introduce unnecessary files, placeholder folders, or dead code.
@@ -14,19 +14,13 @@
 2. **Zero Inline Business Logic in Controllers**:
    - HTTP Controllers must only parse incoming requests/DTOs, delegate execution to a single dedicated Action, and return an API Resource or View.
    - Controllers exceeding 25 lines per method violate architectural standards.
-3. **Zero Inline Raw JSX/HTML for Complex Sections**:
-   - `page.tsx` or Blade view files must not contain inline multi-element layout blocks, hardcoded card grids, or ad-hoc data tables.
-   - Every UI element strictly belongs to:
-     - `components/ui` (reusable primitives: Button, Card, Badge).
-     - `components/shared` (cross-cutting layout/display: PageHeader, MetricCard, DataTable).
-     - `features/{domain}/components` (feature-specific section components: DashboardStats, CheckoutForm).
-4. **Stateless API vs Stateful Dashboard Isolation**:
+3. **Stateless API vs Stateful Admin Isolation**:
    - API routes (`/api/v1/*`) are strictly stateless, authenticated via Bearer tokens, and MUST return JSON with explicit HTTP status codes (never redirect on unauthenticated 401).
    - Admin routes (`/admin/*`) are stateful, protected by session cookies, CSRF tokens, and render atomic Blade components (`<x-layout>`, `<x-card>`, `<x-table>`).
-5. **Strict Typing Everywhere**:
-   - **PHP (8.3+)**: `declare(strict_types=1);` on every PHP file. All arguments and returns must have explicit native types. No untyped parameters.
-   - **TypeScript**: `strict: true`, zero `any` usage. Prefer discriminated unions, typed DTO interfaces, and RTK Query generated/typed endpoints.
-6. **No N+1 Queries & Safe Eloquent Access**:
+4. **Strict Typing Everywhere (PHP 8.4+)**:
+   - `declare(strict_types=1);` on every PHP file.
+   - All method arguments, properties, and returns must have explicit native types. No untyped parameters.
+5. **No N+1 Queries & Safe Eloquent Access**:
    - Eloquent strict mode enabled in non-production environments (`preventLazyLoading`, `preventSilentlyDiscardingAttributes`, `preventAccessingMissingAttributes`).
    - All relations must be eager-loaded using `with()` or cached Redis projections.
 
@@ -36,30 +30,29 @@
 
 ### 2.1 Directory Structure & Boundaries
 ```
-backend/
-├── app/
-│   ├── Actions/{Domain}/          # Single-purpose invocable domain operations
-│   ├── DTOs/{Domain}/             # Readonly typed data transfer objects
-│   ├── Enums/                     # Backed PHP enums for domain states
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Api/v1/            # API Responders (Stateless)
-│   │   │   └── Admin/             # Blade Responders (Stateful)
-│   │   ├── Requests/{Domain}/     # Form Requests (Validation & Authorization)
-│   │   └── Resources/Api/v1/      # JSON API transformers
-│   ├── Jobs/{Domain}/             # Async queue jobs with backoff & retry
-│   ├── Models/                    # Strict Eloquent Entities (no raw query building)
-│   ├── Providers/                 # Application service providers (Strict Eloquent, Rate Limits)
-│   └── Services/{Domain}/         # Infrastructure services (Redis caching, Payment gateways)
-├── bootstrap/app.php              # Dual routing (stateless API v1 + stateful web admin)
-├── database/migrations/           # Strictly typed migrations with composite indexes
-├── resources/views/
-│   ├── components/                # Reusable Blade components (<x-layout>, <x-card>, <x-table>)
-│   └── admin/                     # Admin views utilizing atomic Blade components
-└── routes/
-    ├── api.php                    # Stateless API routes
-    ├── web.php                    # Stateful admin dashboard routes
-    └── console.php                # CLI commands
+app/
+├── Actions/{Domain}/          # Single-purpose invocable domain operations
+├── DTOs/{Domain}/             # Readonly typed data transfer objects
+├── Enums/                     # Backed PHP enums for domain states
+├── Http/
+│   ├── Controllers/
+│   │   ├── Api/v1/            # API Responders (Stateless)
+│   │   └── Admin/             # Blade Responders (Stateful)
+│   ├── Requests/{Domain}/     # Form Requests (Validation & Authorization)
+│   └── Resources/Api/v1/      # JSON API transformers
+├── Jobs/{Domain}/             # Async queue jobs with backoff & retry
+├── Models/                    # Strict Eloquent Entities (no raw query building)
+├── Providers/                 # Application service providers (Strict Eloquent, Rate Limits)
+└── Services/{Domain}/         # Infrastructure services (Redis caching, Payment gateways)
+bootstrap/app.php              # Dual routing (stateless API v1 + stateful web admin)
+database/migrations/           # Strictly typed migrations with composite indexes
+resources/views/
+├── components/                # Reusable Blade components (<x-layout>, <x-card>, <x-table>)
+└── admin/                     # Admin views utilizing atomic Blade components
+routes/
+├── api.php                    # Stateless API routes
+├── web.php                    # Stateful admin dashboard routes
+└── console.php                # CLI commands
 ```
 
 ### 2.2 ADR & Action Design
@@ -79,56 +72,22 @@ backend/
 
 ---
 
-## 3. Frontend (Next.js 15 App Router & RTK Query) Architecture
-
-### 3.1 Directory Structure & Component Layers
-```
-frontend/src/
-├── app/                       # Next.js App Router (Routing, Layouts, Metadata)
-├── components/
-│   ├── ui/                    # Primitive atomic components (shadcn/ui, buttons, badges)
-│   └── shared/                # Cross-feature reusables (MetricCard, PageHeader, DataTable)
-├── features/{feature}/
-│   ├── api/                   # RTK Query slice injections (e.g. orderApi.ts)
-│   ├── components/            # Domain-specific section components (DashboardStats.tsx)
-│   ├── hooks/                 # Feature-specific custom hooks
-│   └── types/                 # TypeScript interfaces and response schemas
-└── store/
-    ├── store.ts               # Redux Toolkit store definition
-    ├── hooks.ts               # Typed useAppDispatch & useAppSelector
-    └── api/apiSlice.ts        # Base RTK Query API slice (token injection, tags)
-```
-
-### 3.2 State Management & Data Fetching
-- Server data MUST be managed exclusively via RTK Query (`apiSlice.ts` and extended feature slices).
-- RTK Query tag invalidation MUST be defined declaratively for write mutations (`providesTags`, `invalidatesTags`).
-- Client UI state (e.g., drawer toggles, active filters) lives in RTK slices or local React state, never mixed with server response state.
-
-### 3.3 Atomic Component Guidelines
-- **UI Primitives (`components/ui`)**: Zero business logic, purely presentational, accepts polymorphic styling via `clsx`/`tailwind-merge`.
-- **Shared Components (`components/shared`)**: Structural patterns reusable across >1 feature.
-- **Section Components (`features/{domain}/components`)**: Encapsulates data fetching or state orchestration for a distinct section.
-- **Page (`app/**/page.tsx`)**: Responsible ONLY for assembling section components and injecting page metadata.
-
----
-
-## 4. DRY Enforcement Matrix: When to Extract?
+## 3. DRY Enforcement Matrix: When to Extract?
 
 | Scenario | Clean Code Rule | Extraction Destination |
 | :--- | :--- | :--- |
 | Database query repeated in 2+ places | Never duplicate SQL/query logic | Custom Model Scope or Query Class |
 | Multi-step mutation / side effect | Single Responsibility | `app/Actions/{Domain}/{ActionName}.php` |
 | Request validation logic | Never validate in Controller | `app/Http/Requests/{Domain}/{RequestName}.php` |
-| UI element used in 2+ domains | Component duplication | `components/shared/{ComponentName}.tsx` |
-| UI style variant repeated 3+ times | No repeated raw Tailwind strings | `components/ui/{primitive}.tsx` |
-| API Query / Mutation | Never use manual `fetch` / `axios` | RTK Query slice (`features/{domain}/api/`) |
+| Data transformation logic | Never format arrays in Controller | `app/Http/Resources/Api/v1/{ResourceName}.php` |
 
 ---
 
-## 5. Clean Code Audit Checklist
+## 4. Backend Clean Code Audit Checklist
 
-Before declaring any task or PR complete:
-1. **Zero Unused Code**: Are there any unused imports, variables, dead functions, or obsolete files? Delete them.
-2. **Strict Types Checked**: Does PHP have `declare(strict_types=1);` and full type annotations? Does TypeScript pass `tsc --noEmit` without `any`?
-3. **SRP Maintained**: Are controllers thin? Are business operations isolated in single Actions?
-4. **Atomic UI Segregated**: Are sections isolated into feature components instead of dumped inline into `page.tsx`?
+Before declaring any backend task or PR complete:
+1. **Zero Unused Code**: Are there any unused imports, dead functions, commented-out code, or obsolete files? Delete them.
+2. **Strict Types Checked**: Does every PHP file have `declare(strict_types=1);` and complete native type annotations?
+3. **SRP Maintained**: Are controllers thin (delegating immediately to Actions)?
+4. **Database & Queries Safe**: Are relationships eager-loaded with `with(...)`? No N+1 queries?
+5. **No Broken Migrations**: Are composite indexes and foreign key constraints explicitly declared?
