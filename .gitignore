@@ -1,0 +1,50 @@
+# PHP & Node Dependencies
+/vendor/
+/node_modules/
+
+# Environment Configuration
+.env
+.env.backup
+.env.production
+.env.*.local
+!.env.example
+
+# Laravel Runtime Storage & Sessions
+/storage/*.key
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+
+# Compiled Bootstrap Cache
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+
+# Local Databases and Logs
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.log
+
+# Front-end Build Artifacts (if any)
+/public/hot
+/public/storage
+
+# Testing & Cache
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# OS & Editor Metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
