@@ -1,12 +1,13 @@
 FROM dunglas/frankenphp:1-php8.4-bookworm
 
-# Install system dependencies & PostgreSQL development libraries
+# Install system dependencies, PostgreSQL dev libraries & libcap
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libzip-dev \
     unzip \
     git \
     curl \
+    libcap2-bin \
     && install-php-extensions \
     pdo_mysql \
     mysqli \
@@ -17,6 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pcntl \
     bcmath \
     zip \
+    && setcap -r /usr/local/bin/frankenphp || true \
+    && chmod +x /usr/local/bin/frankenphp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer

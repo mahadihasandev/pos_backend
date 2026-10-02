@@ -23,5 +23,11 @@ php artisan event:cache
 PORT=${PORT:-8000}
 echo "==> Starting Laravel Octane (FrankenPHP) on port $PORT..."
 
+# Ensure frankenphp binary has no restricted capabilities causing EPERM on container runtimes
+if command -v setcap >/dev/null 2>&1; then
+    setcap -r /usr/local/bin/frankenphp 2>/dev/null || true
+fi
+chmod +x /usr/local/bin/frankenphp 2>/dev/null || true
+
 # Start Octane listening on Render's assigned PORT
 exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port="$PORT" --workers=4
