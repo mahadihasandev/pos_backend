@@ -35,6 +35,8 @@ class OrderItem extends Model
         'product_name',
         'quantity',
         'unit_price',
+        'cost_price',
+        'discount_amount',
         'total_price',
     ];
 
@@ -43,6 +45,8 @@ class OrderItem extends Model
         'product_id' => 'integer',
         'quantity' => 'integer',
         'unit_price' => 'decimal:4',
+        'cost_price' => 'decimal:4',
+        'discount_amount' => 'decimal:4',
         'total_price' => 'decimal:4',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -54,5 +58,13 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    /**
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }
