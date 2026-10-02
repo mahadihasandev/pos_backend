@@ -1,4 +1,4 @@
-FROM dunglas/frankenphp:latest-php8.3
+FROM dunglas/frankenphp:latest-php8.4
 
 # Install system dependencies & PostgreSQL development libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -45,7 +45,7 @@ RUN mkdir -p /app/storage/framework/cache/data \
 
 # Install composer production dependencies if composer.json exists
 RUN if [ -f composer.json ]; then \
-    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts; \
+    composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts --ignore-platform-req=php+; \
     fi
 
 # Ensure entrypoint is executable and has unix line endings
