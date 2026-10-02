@@ -21,7 +21,7 @@ class OrderAdminController extends Controller
      */
     public function index(Request $request): View
     {
-        $tenantId = 1; // In production, resolved from authenticated admin session/tenant context
+        $tenantId = (int) (auth()->user()?->tenant_id ?? 1);
 
         $metrics = $this->metricsCacheService->getTenantDailyMetrics($tenantId);
 

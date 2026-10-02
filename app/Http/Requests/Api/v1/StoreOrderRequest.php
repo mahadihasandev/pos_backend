@@ -32,7 +32,7 @@ class StoreOrderRequest extends FormRequest
             'items.*.product_id' => ['required', 'integer'],
             'items.*.sku' => ['required', 'string', 'max:64'],
             'items.*.product_name' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
         ];
     }

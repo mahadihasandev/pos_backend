@@ -43,7 +43,7 @@ class OrderItem extends Model
     protected $casts = [
         'order_id' => 'integer',
         'product_id' => 'integer',
-        'quantity' => 'integer',
+        'quantity' => 'decimal:4',
         'unit_price' => 'decimal:4',
         'cost_price' => 'decimal:4',
         'discount_amount' => 'decimal:4',

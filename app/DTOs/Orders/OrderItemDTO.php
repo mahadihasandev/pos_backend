@@ -10,7 +10,7 @@ readonly class OrderItemDTO
         public int $productId,
         public string $sku,
         public string $productName,
-        public int $quantity,
+        public float $quantity,
         public float $unitPrice,
     ) {}
 
@@ -28,7 +28,7 @@ readonly class OrderItemDTO
             productId: (int) $data['product_id'],
             sku: (string) $data['sku'],
             productName: (string) $data['product_name'],
-            quantity: (int) $data['quantity'],
+            quantity: (float) $data['quantity'],
             unitPrice: (float) $data['unit_price'],
         );
     }

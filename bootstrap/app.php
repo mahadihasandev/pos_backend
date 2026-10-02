@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Redirect unauthenticated guests to Admin Login
+        $middleware->redirectGuestsTo('/admin/login');
+
         // Stateful Web / Admin middleware group
         $middleware->web(append: [
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
