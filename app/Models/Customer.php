@@ -77,6 +77,30 @@ class Customer extends Model
         return ((float) $this->credit_balance + $additionalDue) <= $limit;
     }
 
+    public function getFormattedWhatsappPhone(): string
+    {
+        $clean = preg_replace('/[^0-9]/', '', $this->phone) ?? '';
+
+        if (str_starts_with($clean, '880')) {
+            return $clean;
+        }
+
+        if (str_starts_with($clean, '01')) {
+            return '88' . $clean;
+        }
+
+        return $clean;
+    }
+
+    public function getWhatsappDueNoticeUrl(string $storePhone = '+8801735696417'): string
+    {
+        $phone = $this->getFormattedWhatsappPhone();
+        $due = number_format((float) $this->credit_balance, 2);
+        $message = "Assalamu Alaikum {$this->name}, this is a gentle reminder from POS SuperShop regarding your outstanding due balance of BDT {$due}. For details or payment assistance, please contact our CRM on WhatsApp at {$storePhone}. Thank you!";
+
+        return 'https://wa.me/' . $phone . '?text=' . urlencode($message);
+    }
+
     /**
      * @return HasMany<Order, $this>
      */

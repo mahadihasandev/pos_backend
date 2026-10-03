@@ -69,21 +69,67 @@ class UserAdminController extends Controller
             'phone' => 'nullable|string|max:20',
         ]);
 
-        $this->createUserAction->execute(array_merge($validated, ['tenant_id' => $tenantId]));
+        $canSell = $request->boolean('can_sell', true);
+
+        $this->createUserAction->execute(array_merge($validated, [
+            'tenant_id' => $tenantId,
+            'can_sell' => $canSell,
+        ]));
 
         return redirect()->route('admin.users.index')->with('success', 'Staff account created successfully.');
     }
 
     /**
-     * Toggle active status of a staff member.
+     * Toggle active/inactive status of a staff member.
      */
     public function toggleStatus(int $id): RedirectResponse
     {
         abort_unless(auth()->user()?->isManager(), 403, 'Unauthorized action.');
 
+        if ($id === (int) auth()->id()) {
+            return back()->withErrors(['error' => 'You cannot deactivate your own account while logged in.']);
+        }
+
         $user = User::where('tenant_id', auth()->user()?->tenant_id ?? 1)->findOrFail($id);
         $user->update(['is_active' => ! $user->is_active]);
 
-        return back()->with('success', "Staff status updated to " . ($user->is_active ? 'Active' : 'Inactive'));
+        return back()->with('success', "Staff status for {$user->name} updated to " . ($user->is_active ? 'Active' : 'Inactive'));
+    }
+
+    /**
+     * Toggle POS selling access (permission to checkout orders).
+     */
+    public function toggleSellAccess(int $id): RedirectResponse
+    {
+        abort_unless(auth()->user()?->isManager(), 403, 'Unauthorized action.');
+
+        $user = User::where('tenant_id', auth()->user()?->tenant_id ?? 1)->findOrFail($id);
+        $user->update(['can_sell' => ! (bool) ($user->can_sell ?? true)]);
+
+        $statusText = $user->can_sell ? 'Selling Allowed' : 'Selling Blocked';
+        return back()->with('success', "POS selling permission for {$user->name} updated to {$statusText}.");
+    }
+
+    /**
+     * Delete a staff account permanently.
+     */
+    public function destroy(int $id): RedirectResponse
+    {
+        abort_unless(auth()->user()?->isManager(), 403, 'Unauthorized action.');
+
+        if ($id === (int) auth()->id()) {
+            return back()->withErrors(['error' => 'You cannot delete your own account while logged in.']);
+        }
+
+        $user = User::where('tenant_id', auth()->user()?->tenant_id ?? 1)->findOrFail($id);
+
+        if ($user->isSuperAdmin()) {
+            return back()->withErrors(['error' => 'Super Administrator account cannot be deleted.']);
+        }
+
+        $userName = $user->name;
+        $user->delete();
+
+        return back()->with('success', "Staff account for {$userName} was permanently deleted.");
     }
 }

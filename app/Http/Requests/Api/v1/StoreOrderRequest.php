@@ -12,7 +12,11 @@ class StoreOrderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Add multi-tenant authorization logic (e.g. check user has tenant access)
+        $user = $this->user();
+        if ($user && ! $user->canSell()) {
+            return false;
+        }
+
         return true;
     }
 

@@ -68,9 +68,9 @@
                 <x-slot:head>
                     <th class="px-6 py-3.5">Staff Member</th>
                     <th class="px-6 py-3.5">Designation</th>
-                    <th class="px-6 py-3.5">POS Terminal PIN</th>
-                    <th class="px-6 py-3.5">Phone</th>
-                    <th class="px-6 py-3.5">Status</th>
+                    <th class="px-6 py-3.5">POS PIN</th>
+                    <th class="px-6 py-3.5">Account Status</th>
+                    <th class="px-6 py-3.5">POS Selling Access</th>
                     <th class="px-6 py-3.5 text-right">Actions</th>
                 </x-slot:head>
 
@@ -105,29 +105,79 @@
                             {{ $user->pin_code ? str_pad($user->pin_code, 4, '•', STR_PAD_LEFT) : 'N/A' }}
                         </td>
 
-                        <td class="px-6 py-4 text-xs text-slate-600 font-mono">
-                            {{ $user->phone ?? '—' }}
-                        </td>
-
+                        {{-- Active / Inactive Status --}}
                         <td class="px-6 py-4">
-                            <x-badge :variant="$user->is_active ? 'success' : 'danger'">
-                                {{ $user->is_active ? 'Active' : 'Disabled' }}
-                            </x-badge>
+                            <div class="flex items-center gap-2">
+                                <x-badge :variant="$user->is_active ? 'success' : 'danger'">
+                                    {{ $user->is_active ? 'Active' : 'Deactivated' }}
+                                </x-badge>
+
+                                @if(auth()->user()?->isManager() && $user->id !== auth()->id() && ! $user->isSuperAdmin())
+                                    <form action="{{ route('admin.users.toggle', $user->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button 
+                                            type="submit" 
+                                            class="text-[11px] font-bold px-2 py-0.5 rounded-lg border transition {{ $user->is_active ? 'border-rose-200 text-rose-600 hover:bg-rose-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50' }}"
+                                            title="{{ $user->is_active ? 'Deactivate staff account' : 'Re-activate staff account' }}"
+                                        >
+                                            {{ $user->is_active ? 'Deactivate' : 'Activate' }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </td>
 
+                        {{-- POS Selling Access (can_sell) --}}
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                @if((bool) ($user->can_sell ?? true))
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        <span>Can Sell</span>
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        <span>Blocked</span>
+                                    </span>
+                                @endif
+
+                                @if(auth()->user()?->isManager() && $user->id !== auth()->id() && ! $user->isSuperAdmin())
+                                    <form action="{{ route('admin.users.toggle-sell', $user->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button 
+                                            type="submit" 
+                                            class="text-[11px] font-bold px-2 py-0.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 transition"
+                                            title="Toggle permission to ring up sales and checkout orders"
+                                        >
+                                            {{ (bool) ($user->can_sell ?? true) ? 'Block Sales' : 'Allow Sales' }}
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+
+                        {{-- Account Actions --}}
                         <td class="px-6 py-4 text-right">
-                            @if(auth()->user()?->isManager() && $user->id !== auth()->id())
-                                <form action="{{ route('admin.users.toggle', $user->id) }}" method="POST" class="inline">
+                            @if(auth()->user()?->isManager() && $user->id !== auth()->id() && ! $user->isSuperAdmin())
+                                <form 
+                                    action="{{ route('admin.users.destroy', $user->id) }}" 
+                                    method="POST" 
+                                    class="inline"
+                                    onsubmit="return confirm('Are you sure you want to permanently delete the account for &quot;{{ $user->name }}&quot;? This action cannot be undone.')"
+                                >
                                     @csrf
+                                    @method('DELETE')
                                     <button 
                                         type="submit" 
-                                        class="text-xs font-semibold {{ $user->is_active ? 'text-rose-600 hover:text-rose-700' : 'text-emerald-600 hover:text-emerald-700' }} transition"
+                                        class="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 transition"
+                                        title="Permanently delete staff member"
                                     >
-                                        {{ $user->is_active ? 'Deactivate' : 'Activate' }}
+                                        Delete Account
                                     </button>
                                 </form>
                             @else
-                                <span class="text-xs text-slate-400">Current User</span>
+                                <span class="text-xs font-medium text-slate-400">Current User</span>
                             @endif
                         </td>
                     </tr>
@@ -236,6 +286,23 @@
                                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                             />
                         </div>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-slate-800">POS Selling Access</p>
+                            <p class="text-[11px] text-slate-500">Allow cashier to scan items and checkout sales</p>
+                        </div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="can_sell" 
+                                value="1" 
+                                checked 
+                                class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                            />
+                            <span class="text-xs font-semibold text-slate-700">Enabled</span>
+                        </label>
                     </div>
 
                     <div class="pt-3 flex items-center gap-2">

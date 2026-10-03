@@ -27,6 +27,7 @@ class User extends Authenticatable
         'pin_code',
         'phone',
         'is_active',
+        'can_sell',
     ];
 
     /**
@@ -46,8 +47,14 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'can_sell' => 'boolean',
             'tenant_id' => 'integer',
         ];
+    }
+
+    public function canSell(): bool
+    {
+        return $this->is_active && (bool) ($this->can_sell ?? true);
     }
 
     public function isSuperAdmin(): bool

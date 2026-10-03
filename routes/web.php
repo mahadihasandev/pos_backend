@@ -43,6 +43,8 @@ Route::prefix('admin')->group(function (): void {
         Route::get('/users', [UserAdminController::class, 'index'])->name('admin.users.index');
         Route::post('/users', [UserAdminController::class, 'store'])->name('admin.users.store');
         Route::post('/users/{id}/toggle', [UserAdminController::class, 'toggleStatus'])->name('admin.users.toggle');
+        Route::post('/users/{id}/toggle-sell', [UserAdminController::class, 'toggleSellAccess'])->name('admin.users.toggle-sell');
+        Route::delete('/users/{id}', [UserAdminController::class, 'destroy'])->name('admin.users.destroy');
 
         // Customer CRM & Khata Due Ledger
         Route::get('/customers', [CustomerAdminController::class, 'index'])->name('admin.customers.index');

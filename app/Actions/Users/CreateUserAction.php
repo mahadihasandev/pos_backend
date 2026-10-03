@@ -51,6 +51,7 @@ class CreateUserAction
             'pin_code' => trim($data['pin_code']),
             'phone' => isset($data['phone']) ? trim($data['phone']) : null,
             'is_active' => true,
+            'can_sell' => $data['can_sell'] ?? true,
         ]);
     }
 }
