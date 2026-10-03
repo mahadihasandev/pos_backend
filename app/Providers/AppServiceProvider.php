@@ -8,6 +8,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Enforce HTTPS scheme for all generated URLs when in production or when FORCE_HTTPS is true
+        if ($this->app->isProduction() || (bool) env('FORCE_HTTPS', false)) {
+            URL::forceScheme('https');
+        }
+
         // Strict Eloquent in development: Prevents N+1 queries, silently discarded fields, and accessing missing attributes
         Model::shouldBeStrict(! $this->app->isProduction());
 

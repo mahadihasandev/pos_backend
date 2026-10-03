@@ -55,6 +55,6 @@ RUN if [ -f composer.json ]; then \
 RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 ENV PORT=8000
-EXPOSE 8000
+EXPOSE 8000 443 80
 
 ENTRYPOINT ["/app/entrypoint.sh"]

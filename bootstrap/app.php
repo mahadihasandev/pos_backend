@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api/v1',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all upstream reverse proxies & load balancers (FrankenPHP, Render, Cloudflare, AWS)
+        $middleware->trustProxies(at: '*');
+
+        // Global TLS enforcement and security headers (HSTS, nosniff, etc.)
+        $middleware->prepend(\App\Http\Middleware\EnforceTlsAndSecurityHeaders::class);
+
         // Redirect unauthenticated guests to Admin Login
         $middleware->redirectGuestsTo('/admin/login');
 

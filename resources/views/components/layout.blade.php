@@ -12,30 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS Play CDN & Alpine.js for interactive UI -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Local Compiled Tailwind CSS & Alpine.js for interactive UI -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
 </head>
 <body class="h-full font-sans antialiased flex flex-col md:flex-row overflow-hidden bg-slate-50 text-slate-800">
 

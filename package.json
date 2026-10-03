@@ -1,0 +1,12 @@
+{
+  "name": "pos-supershop-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --minify",
+    "dev": "tailwindcss -i ./resources/css/app.css -o ./public/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

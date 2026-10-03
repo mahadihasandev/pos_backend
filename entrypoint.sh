@@ -29,5 +29,12 @@ if command -v setcap >/dev/null 2>&1; then
 fi
 chmod +x /usr/local/bin/frankenphp 2>/dev/null || true
 
-# Start Octane listening on Render's assigned PORT
-exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port="$PORT" --workers=4
+# Start Octane with native TLS if OCTANE_HTTPS is enabled, otherwise on assigned PORT
+if [ "$OCTANE_HTTPS" = "true" ] || [ "$ENABLE_TLS" = "true" ]; then
+    HTTPS_PORT=${HTTPS_PORT:-443}
+    echo "==> Starting Laravel Octane (FrankenPHP) with native TLS on port $HTTPS_PORT..."
+    exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port="$HTTPS_PORT" --https --http-redirect --workers=4
+else
+    echo "==> Starting Laravel Octane (FrankenPHP) on port $PORT..."
+    exec php artisan octane:start --server=frankenphp --host=0.0.0.0 --port="$PORT" --workers=4
+fi
