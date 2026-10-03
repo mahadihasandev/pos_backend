@@ -18,7 +18,9 @@ use Illuminate\Support\Facades\Route;
 
 // Root & Fallback Auth Redirects
 Route::get('/', function () {
-    return redirect()->route('admin.orders.index');
+    return auth()->check()
+        ? redirect()->route('admin.orders.index')
+        : redirect()->route('admin.login');
 });
 
 Route::get('/login', function () {

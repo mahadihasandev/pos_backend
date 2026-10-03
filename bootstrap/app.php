@@ -18,10 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Trust all upstream reverse proxies & load balancers (FrankenPHP, Render, Cloudflare, AWS)
-        $middleware->trustProxies(at: '*');
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR |
+                Request::HEADER_X_FORWARDED_HOST |
+                Request::HEADER_X_FORWARDED_PORT |
+                Request::HEADER_X_FORWARDED_PROTO |
+                Request::HEADER_X_FORWARDED_AWS_ELB
+        );
 
-        // Global TLS enforcement and security headers (HSTS, nosniff, etc.)
-        $middleware->prepend(\App\Http\Middleware\EnforceTlsAndSecurityHeaders::class);
+        // Security headers (HSTS, nosniff, etc.) and TLS enforcement after proxy headers are resolved
+        $middleware->append(\App\Http\Middleware\EnforceTlsAndSecurityHeaders::class);
 
         // Redirect unauthenticated guests to Admin Login
         $middleware->redirectGuestsTo('/admin/login');

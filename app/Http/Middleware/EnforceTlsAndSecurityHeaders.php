@@ -19,8 +19,13 @@ class EnforceTlsAndSecurityHeaders
     {
         $shouldForceHttps = (bool) env('FORCE_HTTPS', false) || app()->isProduction();
 
+        // Check if request is secure directly, via Symfony trusted proxy, or reverse proxy forwarded headers
+        $isSecure = $request->isSecure()
+            || strtolower((string) $request->header('x-forwarded-proto')) === 'https'
+            || strtolower((string) $request->server('HTTP_X_FORWARDED_PROTO')) === 'https';
+
         // Redirect plain HTTP requests to HTTPS when TLS is enforced
-        if ($shouldForceHttps && ! $request->isSecure()) {
+        if ($shouldForceHttps && ! $isSecure) {
             return redirect()->secure($request->getRequestUri(), 308);
         }
 
@@ -28,7 +33,7 @@ class EnforceTlsAndSecurityHeaders
         $response = $next($request);
 
         // Attach Strict-Transport-Security (HSTS) when running on HTTPS
-        if ($request->isSecure() || $shouldForceHttps) {
+        if ($isSecure) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
